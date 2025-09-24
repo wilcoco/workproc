@@ -1,0 +1,28 @@
+# Node/Next.js
+node_modules
+.next
+out
+.DS_Store
+
+# Env
+.env
+.env.*.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor
+.idea
+.vscode
+
+# Build/Tmp
+coverage
+.dist
+.turbo
+.vercel
+
+# Prisma
+prisma/dev.db

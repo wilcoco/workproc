@@ -1,0 +1,192 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  MEMBER
+}
+
+enum ObjectiveStatus {
+  PLANNED
+  ACTIVE
+  DONE
+  PAUSED
+}
+
+enum MetricType {
+  PERCENT
+  NUMBER
+  BINARY
+}
+
+enum InitiativeStatus {
+  PLANNED
+  DOING
+  DONE
+  BLOCKED
+}
+
+enum Period {
+  DAILY
+  WEEKLY
+}
+
+model User {
+  id           String        @id @default(cuid())
+  email        String        @unique
+  name         String?
+  role         Role          @default(MEMBER)
+  createdAt    DateTime      @default(now())
+  memberships  Membership[]
+  workLogs     WorkLog[]
+  objectives   Objective[]   @relation("ObjectiveOwner")
+  accounts     Account[]
+  sessions     Session[]
+
+  @@map("users")
+}
+
+model Team {
+  id           String        @id @default(cuid())
+  name         String
+  createdAt    DateTime      @default(now())
+  memberships  Membership[]
+  objectives   Objective[]
+  workLogs     WorkLog[]
+
+  @@map("teams")
+}
+
+model Membership {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId    String
+  role      Role     @default(MEMBER)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, teamId])
+  @@map("memberships")
+}
+
+model Objective {
+  id           String           @id @default(cuid())
+  team         Team             @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId       String
+  owner        User?            @relation("ObjectiveOwner", fields: [ownerId], references: [id])
+  ownerId      String?
+  title        String
+  description  String?
+  startDate    DateTime?
+  endDate      DateTime?
+  status       ObjectiveStatus  @default(PLANNED)
+  createdAt    DateTime         @default(now())
+  keyResults   KeyResult[]
+  initiatives  Initiative[]
+  checkIns     CheckIn[]
+
+  @@map("objectives")
+}
+
+model KeyResult {
+  id           String       @id @default(cuid())
+  objective    Objective    @relation(fields: [objectiveId], references: [id], onDelete: Cascade)
+  objectiveId  String
+  title        String
+  metricType   MetricType   @default(NUMBER)
+  target       Float?
+  current      Float?       @default(0)
+  unit         String?
+  confidence   Int?
+  checkIns     CheckIn[]
+
+  @@map("key_results")
+}
+
+model Initiative {
+  id           String            @id @default(cuid())
+  objective    Objective         @relation(fields: [objectiveId], references: [id], onDelete: Cascade)
+  objectiveId  String
+  title        String
+  status       InitiativeStatus  @default(PLANNED)
+
+  @@map("initiatives")
+}
+
+model WorkLog {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId    String
+  date      DateTime
+  period    Period
+  content   String
+  progress  Int?
+  risk      String?
+  createdAt DateTime @default(now())
+
+  @@index([userId, date])
+  @@map("work_logs")
+}
+
+model CheckIn {
+  id           String    @id @default(cuid())
+  objective    Objective? @relation(fields: [objectiveId], references: [id], onDelete: Cascade)
+  objectiveId  String?
+  keyResult    KeyResult? @relation(fields: [keyResultId], references: [id], onDelete: Cascade)
+  keyResultId  String?
+  value        Float?
+  confidence   Int?
+  note         String?
+  createdAt    DateTime  @default(now())
+
+  @@map("check_ins")
+}
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String? @db.Text
+  access_token       String? @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String? @db.Text
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}

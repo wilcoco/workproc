@@ -1,0 +1,13 @@
+{
+  "name": "workproc",
+  "private": true,
+  "engines": {
+    "node": ">=18.17.0"
+  },
+  "scripts": {
+    "dev": "npm --prefix web run dev",
+    "build": "npm --prefix web run build",
+    "start": "npm --prefix web run start",
+    "postinstall": "npm --prefix web install && npm --prefix web run postinstall"
+  }
+}
