@@ -16,7 +16,7 @@ const links: ReadonlyArray<{ href: Route; label: string }> = [
   { href: "/settings", label: "설정" }
 ];
 
-export default function Nav() {
+export default function Nav({ allowSignup = true }: { allowSignup?: boolean }) {
   const pathname = usePathname();
   return (
     <nav className="flex flex-wrap items-center gap-4 text-sm">
@@ -34,7 +34,7 @@ export default function Nav() {
         </Link>
       ))}
       <div className="ml-auto">
-        <AuthButtons />
+        <AuthButtons allowSignup={allowSignup} />
       </div>
     </nav>
   );

@@ -10,13 +10,14 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const allowSignup = process.env.DISABLE_SIGNUP !== "true";
   return (
     <html lang="ko">
       <body className="min-h-screen bg-gray-50 text-gray-900">
         <Providers>
           <header className="border-b bg-white">
             <div className="mx-auto max-w-5xl p-4">
-              <Nav />
+              <Nav allowSignup={allowSignup} />
             </div>
           </header>
           <main className="mx-auto max-w-5xl p-6">{children}</main>

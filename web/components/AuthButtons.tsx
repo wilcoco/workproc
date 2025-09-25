@@ -1,8 +1,10 @@
 "use client";
 
-import { useSession, signIn, signOut } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
+import Link from "next/link";
+import type { Route } from "next";
 
-export default function AuthButtons() {
+export default function AuthButtons({ allowSignup = true }: { allowSignup?: boolean }) {
   const { data: session, status } = useSession();
 
   if (status === "loading") {
@@ -10,21 +12,24 @@ export default function AuthButtons() {
   }
 
   if (!session) {
+    const signinHref = "/auth/signin" as Route;
+    const signupHref = "/auth/signup" as Route;
     return (
       <div className="flex items-center gap-2">
-        <button
-          onClick={() => signIn()}
+        <Link
+          href={signinHref}
           className="rounded bg-blue-600 px-3 py-1 text-white hover:bg-blue-700"
         >
           로그인
-        </button>
-        <button
-          onClick={() => signIn("credentials", { username: "dev", redirect: false })}
-          className="rounded border px-3 py-1 text-sm text-gray-700 hover:bg-gray-100"
-          title="개발용 빠른 로그인"
-        >
-          Dev 로그인
-        </button>
+        </Link>
+        {allowSignup && (
+          <Link
+            href={signupHref}
+            className="rounded border px-3 py-1 text-sm text-gray-700 hover:bg-gray-100"
+          >
+            회원가입
+          </Link>
+        )}
       </div>
     );
   }
